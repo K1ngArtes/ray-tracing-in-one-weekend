@@ -13,3 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Picture files
+*.ppm
+
+# Debug picture output
+debug.txt

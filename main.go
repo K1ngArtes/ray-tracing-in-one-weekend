@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/K1ngArtes/ray-tracing-in-one-weekend/math"
 )
 
 const (
-	imageWidth = 256
+	imageWidth  = 256
 	imageHeight = 256
 )
 
@@ -16,19 +18,33 @@ func main() {
 
 	fmt.Printf("P3\n%d %d\n255\n", imageWidth, imageHeight)
 
-	// Picture is read row by row
-	for row := imageHeight-1; row >= 0; row-- {
-		l.Printf( "\rScanlines remaining: %d", row)
-		for col := 0; col < imageWidth; col++ {
-			r := float64(col) / (imageWidth-1)
-			g := float64(row) / (imageHeight-1)
-			b := 0.25
-			
-			ir := int(255.999 * r)
-			ig := int(255.999 * g)
-			ib := int(255.999 * b)
+	f := os.Stdout
+	defer f.Close()
 
-			fmt.Printf("%d %d %d\n", ir, ig, ib)
+	// Picture is read row by row
+	for row := imageHeight - 1; row >= 0; row-- {
+		l.Printf("\rScanlines remaining: %d", row)
+		for col := 0; col < imageWidth; col++ {
+			color := math.Color{
+				X: float64(col) / (imageWidth - 1),
+				Y: float64(row) / (imageHeight - 1),
+				Z: 0.25,
+			}
+
+			writeColor(f, color)
 		}
+	}
+	l.Print("Done!")
+}
+
+func writeColor(out *os.File, color math.Color) {
+	ir := int(255.999 * color.X)
+	ig := int(255.999 * color.Y)
+	ib := int(255.999 * color.Z)
+
+	s := fmt.Sprintf("%d %d %d\n", ir, ig, ib)
+
+	if _, err := out.WriteString(s); err != nil {
+		panic(err)
 	}
 }

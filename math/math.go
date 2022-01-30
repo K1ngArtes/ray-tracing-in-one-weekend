@@ -4,8 +4,21 @@ import (
 	"math"
 )
 
+type Algebraic interface {
+	Plus(b Algebraic) Algebraic;
+}
+
 type Vec3 struct {
 	X, Y, Z float64
+}
+
+func (a *Vec3) Plus(b Algebraic) Algebraic {
+	switch b.(type) {
+	case *Vec3:
+		return a.Add(b)
+	default:
+		panic("Not implemented")
+	}
 }
 
 func (v *Vec3) Neg() Vec3 {

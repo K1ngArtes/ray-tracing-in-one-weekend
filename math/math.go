@@ -1,99 +1,93 @@
 package math
 
-import (
-	"math"
-)
+import "math"
 
 type Algebraic interface {
-	Plus(b Algebraic) Algebraic;
+	Plus(b Algebraic) Algebraic
 }
 
-type Vec3 struct {
-	X, Y, Z float64
+type Vec3 [3]float64
+
+func (v Vec3) X() float64 {
+	return v[0]
 }
 
-func (a *Vec3) Plus(b Algebraic) Algebraic {
-	switch b.(type) {
-	case *Vec3:
-		return a.Add(b)
-	default:
-		panic("Not implemented")
-	}
+func (v Vec3) Y() float64 {
+	return v[1]
 }
 
-func (v *Vec3) Neg() Vec3 {
+func (v Vec3) Z() float64 {
+	return v[2]
+}
+
+func (v Vec3) Inv() Vec3 {
+	return Vec3{-v[0], -v[1], -v[2]}
+}
+
+func (v Vec3) Len() float64 {
+	return math.Sqrt(v.LenSq())
+}
+
+func (v Vec3) LenSq() float64 {
+	return v[0]*v[0] + v[1]*v[1] + v[2]*v[2]
+}
+
+func (v Vec3) Plus(v2 Vec3) Vec3 {
 	return Vec3{
-		-v.X,
-		-v.Y,
-		-v.Z,
+		v[0] + v2[0],
+		v[1] + v2[1],
+		v[2] + v2[2],
 	}
 }
 
-func (v *Vec3) Add(vec Vec3) Vec3 {
+func (v Vec3) Minus(v2 Vec3) Vec3 {
 	return Vec3{
-		v.X + vec.X,
-		v.Y + vec.Y,
-		v.Z + vec.Z,
+		v[0] - v2[0],
+		v[1] - v2[1],
+		v[2] - v2[2],
 	}
 }
 
-func (v *Vec3) Sub(vec Vec3) Vec3 {
+func (v Vec3) Times(v2 Vec3) Vec3 {
 	return Vec3{
-		v.X - vec.X,
-		v.Y - vec.Y,
-		v.Z - vec.Z,
+		v[0] * v2[0],
+		v[1] * v2[1],
+		v[2] * v2[2],
 	}
 }
 
-func (v *Vec3) Mulf(num float64) Vec3 {
+func (v Vec3) Div(v2 Vec3) Vec3 {
 	return Vec3{
-		v.X * num,
-		v.Y * num,
-		v.Z * num,
+		v[0] / v2[0],
+		v[1] / v2[1],
+		v[2] / v2[2],
 	}
 }
 
-func (v *Vec3) Mulv(vec Vec3) Vec3 {
+func (v Vec3) Scaled(n float64) Vec3 {
 	return Vec3{
-		v.X * vec.X,
-		v.Y * vec.Y,
-		v.Z * vec.Z,
+		v[0] * n,
+		v[1] * n,
+		v[2] * n,
 	}
 }
 
-func (v *Vec3) Div(num float64) Vec3 {
+func (v Vec3) Dot(v2 Vec3) float64 {
+	return v[0]*v2[0] + v[1]*v2[1] + v[2]*v2[2]
+}
+
+func (v Vec3) Cross(v2 Vec3) Vec3 {
 	return Vec3{
-		v.X / num,
-		v.Y / num,
-		v.Z / num,
+		v[1]*v2[2] - v[2]*v2[1],
+		v[2]*v2[0] - v[0]*v2[2],
+		v[0]*v2[1] - v[1]*v2[0],
 	}
 }
 
-func (v *Vec3) Dot() float64 {
-	return v.X*v.X +
-		v.Y*v.Y +
-		v.Z*v.Z
+func (v Vec3) Unit() (u Unit) {
+	k := 1.0 / v.Len()
+	u[0] = v[0] * k
+	u[1] = v[1] * k
+	u[2] = v[2] * k
+	return
 }
-
-func (v *Vec3) Cross(vec Vec3) Vec3 {
-	return Vec3{
-		v.Y*vec.Z - v.Z*vec.Y,
-		v.Z*vec.X - v.X*vec.Z,
-		v.X*vec.Y - v.Y*vec.X,
-	}
-}
-
-func (v *Vec3) UnitVector() Vec3 {
-	return v.Div(v.Len())
-}
-
-func (v *Vec3) Len() float64 {
-	return math.Sqrt(v.Len_squared())
-}
-
-func (v *Vec3) Len_squared() float64 {
-	return v.X*v.X + v.Y*v.Y + v.Z*v.Z
-}
-
-type Point3 = Vec3
-type Color = Vec3

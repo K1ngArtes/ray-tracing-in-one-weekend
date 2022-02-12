@@ -3,8 +3,8 @@ package trace
 import "github.com/K1ngArtes/ray-tracing-in-one-weekend/math"
 
 var (
-	black = Color{0, 0, 0}
-	white = Color{1, 1, 1}
+	Black = Color{0, 0, 0}
+	White = Color{1, 1, 1}
 )
 
 type Color math.Vec3
@@ -22,4 +22,12 @@ func (c Color) G() float64 {
 // B returns the third element (Blue).
 func (c Color) B() float64 {
 	return c[2]
+}
+
+func (c Color) Plus(c2 Color) Color {
+	return Color(math.Vec3(c).Plus(math.Vec3(c2)))
+}
+
+func (c Color) Scaled(n float64) Color {
+	return Color(math.Vec3(c).Scaled(n))
 }

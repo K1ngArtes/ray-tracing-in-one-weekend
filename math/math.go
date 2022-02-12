@@ -56,11 +56,11 @@ func (v Vec3) Times(v2 Vec3) Vec3 {
 	}
 }
 
-func (v Vec3) Div(v2 Vec3) Vec3 {
+func (v Vec3) Div(n float64) Vec3 {
 	return Vec3{
-		v[0] / v2[0],
-		v[1] / v2[1],
-		v[2] / v2[2],
+		v[0] / n,
+		v[1] / n,
+		v[2] / n,
 	}
 }
 
@@ -84,10 +84,10 @@ func (v Vec3) Cross(v2 Vec3) Vec3 {
 	}
 }
 
-func (v Vec3) Unit() (u Unit) {
+func (v Vec3) Unit() (v2 Vec3) {
 	k := 1.0 / v.Len()
-	u[0] = v[0] * k
-	u[1] = v[1] * k
-	u[2] = v[2] * k
+	v2[0] = v[0] * k
+	v2[1] = v[1] * k
+	v2[2] = v[2] * k
 	return
 }

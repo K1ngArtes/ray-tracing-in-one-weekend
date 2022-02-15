@@ -19,7 +19,7 @@ func main() {
 
 	// Image
 	aspectRatio := 16.0 / 9.0
-	imageWidth := 400
+	imageWidth := 1000
 	imageHeight := int(float64(imageWidth) / aspectRatio)
 
 	// Camera
@@ -104,14 +104,14 @@ func rayColor(r trace.Ray) trace.Color {
 func hitSphere(center geom.Vec3, radius float64, r trace.Ray) float64 {
 	oc := r.Origin.Minus(center)
 
-	a := r.Dir.Dot(r.Dir)
-	b := 2.0 * oc.Dot(r.Dir)
-	c := oc.Dot(oc) - radius * radius
-	discriminant := b*b - 4*a*c
+	a := r.Dir.LenSq()
+	halfB := oc.Dot(r.Dir)
+	c := oc.LenSq() - radius * radius
+	discriminant := halfB*halfB - a*c
 
 	if (discriminant < 0) {
         return -1.0;
     } else {
-        return (-b - math.Sqrt(discriminant) ) / (2.0*a);
+        return (-halfB - math.Sqrt(discriminant) ) / a;
     }
 }

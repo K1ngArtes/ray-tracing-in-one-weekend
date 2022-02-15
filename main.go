@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 
-	"github.com/K1ngArtes/ray-tracing-in-one-weekend/math"
+	"github.com/K1ngArtes/ray-tracing-in-one-weekend/geom"
 	"github.com/K1ngArtes/ray-tracing-in-one-weekend/trace"
 )
 
@@ -26,11 +27,11 @@ func main() {
 	viewportWidth := aspectRatio * viewportHeight
 	focalLength := 1.0
 
-	origin := math.Vec3{0, 0, 0}
-	horizontal := math.Vec3{viewportWidth, 0, 0}
-	vertical := math.Vec3{0, viewportHeight, 0}
+	origin := geom.Vec3{0, 0, 0}
+	horizontal := geom.Vec3{viewportWidth, 0, 0}
+	vertical := geom.Vec3{0, viewportHeight, 0}
 	// origin - horizontal/2 - vertical/2 - vec3(0, 0, focal_length);
-	lowerLeftCorner := origin.Minus(horizontal.Div(2)).Minus(vertical.Div(2)).Minus(math.Vec3{0, 0, focalLength})
+	lowerLeftCorner := origin.Minus(horizontal.Div(2)).Minus(vertical.Div(2)).Minus(geom.Vec3{0, 0, focalLength})
 
 	l := log.New(os.Stderr, "", 0)
 
@@ -76,13 +77,15 @@ func writeColor(out *os.File, color trace.Color) {
 }
 
 func rayColor(r trace.Ray) trace.Color {
-	sphereCentre := math.Vec3{0, 0, -1}
-	if hitSphere(sphereCentre, 0.5, r) {
-		return trace.Color{1, 0, 0}
+	sphereCentre := geom.Vec3{0, 0, -1}
+	t := hitSphere(sphereCentre, 0.5, r)
+	if t > 0.0 {
+		normal := r.At(t).Minus(sphereCentre).Unit()
+		return trace.Color{normal.X()+1, normal.Y()+1, normal.Z()+1}.Scaled(0.5)
 	}
-	unitDirection := math.Vec3(r.Dir).Unit()
+	unitDirection := geom.Vec3(r.Dir).Unit()
 
-	t := 0.5 * unitDirection.Y() + 0.5;
+	t = 0.5 * unitDirection.Y() + 0.5;
 
 	blue := trace.Color{0.5, 0.7, 1.0}
 
@@ -98,7 +101,7 @@ func rayColor(r trace.Ray) trace.Color {
 // Checking (𝐏(𝑡)−𝐂)⋅(𝐏(𝑡)−𝐂)=𝑟2
 // (𝐀+𝑡𝐛−𝐂)⋅(𝐀+𝑡𝐛−𝐂)=𝑟2
 // 𝑡2𝐛⋅𝐛+2𝑡𝐛⋅(𝐀−𝐂)+(𝐀−𝐂)⋅(𝐀−𝐂)−𝑟2=0
-func hitSphere(center math.Vec3, radius float64, r trace.Ray) bool {
+func hitSphere(center geom.Vec3, radius float64, r trace.Ray) float64 {
 	oc := r.Origin.Minus(center)
 
 	a := r.Dir.Dot(r.Dir)
@@ -106,5 +109,9 @@ func hitSphere(center math.Vec3, radius float64, r trace.Ray) bool {
 	c := oc.Dot(oc) - radius * radius
 	discriminant := b*b - 4*a*c
 
-	return discriminant > 0
+	if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-b - math.Sqrt(discriminant) ) / (2.0*a);
+    }
 }

@@ -1,13 +1,15 @@
 package trace
 
-import "github.com/K1ngArtes/ray-tracing-in-one-weekend/math"
+import (
+	"github.com/K1ngArtes/ray-tracing-in-one-weekend/geom"
+)
 
 var (
 	Black = Color{0, 0, 0}
 	White = Color{1, 1, 1}
 )
 
-type Color math.Vec3
+type Color geom.Vec3
 
 // R returns the first element (Red).
 func (c Color) R() float64 {
@@ -25,9 +27,9 @@ func (c Color) B() float64 {
 }
 
 func (c Color) Plus(c2 Color) Color {
-	return Color(math.Vec3(c).Plus(math.Vec3(c2)))
+	return Color(geom.Vec3(c).Plus(geom.Vec3(c2)))
 }
 
 func (c Color) Scaled(n float64) Color {
-	return Color(math.Vec3(c).Scaled(n))
+	return Color(geom.Vec3(c).Scaled(n))
 }

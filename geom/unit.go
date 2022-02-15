@@ -1,4 +1,4 @@
-package math
+package geom
 
 type Unit Vec3
 

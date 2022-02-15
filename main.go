@@ -29,6 +29,7 @@ func main() {
 	origin := math.Vec3{0, 0, 0}
 	horizontal := math.Vec3{viewportWidth, 0, 0}
 	vertical := math.Vec3{0, viewportHeight, 0}
+	// origin - horizontal/2 - vertical/2 - vec3(0, 0, focal_length);
 	lowerLeftCorner := origin.Minus(horizontal.Div(2)).Minus(vertical.Div(2)).Minus(math.Vec3{0, 0, focalLength})
 
 	l := log.New(os.Stderr, "", 0)
@@ -45,6 +46,7 @@ func main() {
 			u := float64(col) / (float64(imageWidth) - 1)
 			v := float64(row) / (float64(imageHeight) - 1)
 
+			// ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
 			ray := trace.Ray{origin, lowerLeftCorner.Plus(horizontal.Scaled(u)).Plus(vertical.Scaled(v)).Minus(origin)}
 
 			// color := trace.Color{
@@ -74,9 +76,35 @@ func writeColor(out *os.File, color trace.Color) {
 }
 
 func rayColor(r trace.Ray) trace.Color {
+	sphereCentre := math.Vec3{0, 0, -1}
+	if hitSphere(sphereCentre, 0.5, r) {
+		return trace.Color{1, 0, 0}
+	}
 	unitDirection := math.Vec3(r.Dir).Unit()
 
-	t := 0.5 * (unitDirection.Y() + 1.0)
+	t := 0.5 * unitDirection.Y() + 0.5;
 
-	return trace.White.Scaled(1.0 - t).Plus(trace.Color{0.5, 0.7, 1.0}.Scaled(t))
+	blue := trace.Color{0.5, 0.7, 1.0}
+
+	// linear interpolation
+	// blendedValue=(1−𝑡)⋅startValue+𝑡⋅endValue
+	// (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
+	return trace.White.Scaled(1.0 - t).Plus(blue.Scaled(t))
+}
+
+// (𝑥−𝐶𝑥)2+(𝑦−𝐶𝑦)2+(𝑧−𝐶𝑧)2=𝑟2
+// (𝐏−𝐂)⋅(𝐏−𝐂)=(𝑥−𝐶𝑥)2+(𝑦−𝐶𝑦)2+(𝑧−𝐶𝑧)2
+// (𝐏−𝐂)⋅(𝐏−𝐂)=𝑟2
+// Checking (𝐏(𝑡)−𝐂)⋅(𝐏(𝑡)−𝐂)=𝑟2
+// (𝐀+𝑡𝐛−𝐂)⋅(𝐀+𝑡𝐛−𝐂)=𝑟2
+// 𝑡2𝐛⋅𝐛+2𝑡𝐛⋅(𝐀−𝐂)+(𝐀−𝐂)⋅(𝐀−𝐂)−𝑟2=0
+func hitSphere(center math.Vec3, radius float64, r trace.Ray) bool {
+	oc := r.Origin.Minus(center)
+
+	a := r.Dir.Dot(r.Dir)
+	b := 2.0 * oc.Dot(r.Dir)
+	c := oc.Dot(oc) - radius * radius
+	discriminant := b*b - 4*a*c
+
+	return discriminant > 0
 }

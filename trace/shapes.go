@@ -30,6 +30,7 @@ func (sphere Sphere) Hit(r Ray, tMin float64, tMax float64, hit *Hit) bool {
         return false;
     }
 
+	// Calculate actual hit point
 	sqrtD := math.Sqrt(discriminant)
 	root := (-halfB-sqrtD) / a
 	if root < tMin || root > tMax {
@@ -39,9 +40,10 @@ func (sphere Sphere) Hit(r Ray, tMin float64, tMax float64, hit *Hit) bool {
 		}
 	}
 	
-	hit.t = root
-	hit.Point = r.At(hit.t)
-	hit.Normal = (hit.Point.Minus(sphere.Center)).Div(sphere.Radius)
+	hit.T = root
+	hit.Point = r.At(hit.T)
+	outwardNormal := hit.Point.Minus(sphere.Center).Div(sphere.Radius)
+	hit.SetFaceNormal(&r, &outwardNormal)
 
 	return true
 }

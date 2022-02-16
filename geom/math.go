@@ -91,3 +91,11 @@ func (v Vec3) Unit() (v2 Vec3) {
 	v2[2] = v[2] * k
 	return
 }
+
+func (v Vec3) Negate() Vec3 {
+	return Vec3{
+		-v[0],
+		-v[1],
+		-v[2],
+	}
+}

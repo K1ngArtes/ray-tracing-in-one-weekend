@@ -77,10 +77,10 @@ func writeColor(out *os.File, color trace.Color) {
 }
 
 func rayColor(r trace.Ray) trace.Color {
-	sphereCentre := geom.Vec3{0, 0, -1}
-	t := hitSphere(sphereCentre, 0.5, r)
+	sphere := trace.NewSphere(geom.Vec3{0, 0, -1}, 0.5)
+	t := hitSphere(sphere, r)
 	if t > 0.0 {
-		normal := r.At(t).Minus(sphereCentre).Unit()
+		normal := r.At(t).Minus(sphere.Center).Unit()
 		return trace.Color{normal.X()+1, normal.Y()+1, normal.Z()+1}.Scaled(0.5)
 	}
 	unitDirection := geom.Vec3(r.Dir).Unit()
@@ -101,12 +101,12 @@ func rayColor(r trace.Ray) trace.Color {
 // Checking (𝐏(𝑡)−𝐂)⋅(𝐏(𝑡)−𝐂)=𝑟2
 // (𝐀+𝑡𝐛−𝐂)⋅(𝐀+𝑡𝐛−𝐂)=𝑟2
 // 𝑡2𝐛⋅𝐛+2𝑡𝐛⋅(𝐀−𝐂)+(𝐀−𝐂)⋅(𝐀−𝐂)−𝑟2=0
-func hitSphere(center geom.Vec3, radius float64, r trace.Ray) float64 {
-	oc := r.Origin.Minus(center)
+func hitSphere(sphere trace.Sphere, r trace.Ray) float64 {
+	oc := r.Origin.Minus(sphere.Center)
 
 	a := r.Dir.LenSq()
 	halfB := oc.Dot(r.Dir)
-	c := oc.LenSq() - radius * radius
+	c := oc.LenSq() - sphere.Radius * sphere.Radius
 	discriminant := halfB*halfB - a*c
 
 	if (discriminant < 0) {

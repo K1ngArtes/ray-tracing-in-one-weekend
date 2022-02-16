@@ -11,6 +11,6 @@ func NewRay(origin geom.Vec3, dir geom.Vec3) Ray {
 	return Ray{origin, dir}
 }
 
-func (r Ray) At(t float64) geom.Vec3 {
+func (r *Ray) At(t float64) geom.Vec3 {
 	return r.Origin.Plus(r.Dir.Scaled(t))
 }

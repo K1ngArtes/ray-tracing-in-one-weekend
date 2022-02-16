@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"math"
 	"os"
 
 	"github.com/K1ngArtes/ray-tracing-in-one-weekend/geom"
@@ -42,19 +41,13 @@ func main() {
 
 	// Picture is read row by row
 	for row := imageHeight - 1; row >= 0; row-- {
-		l.Printf("\rScanlines remaining: %d", row)
+		// l.Printf("\rScanlines remaining: %d", row)
 		for col := 0; col < imageWidth; col++ {
 			u := float64(col) / (float64(imageWidth) - 1)
 			v := float64(row) / (float64(imageHeight) - 1)
 
 			// ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
 			ray := trace.Ray{origin, lowerLeftCorner.Plus(horizontal.Scaled(u)).Plus(vertical.Scaled(v)).Minus(origin)}
-
-			// color := trace.Color{
-			// 	float64(col) / (imageWidth - 1),
-			// 	float64(row) / (imageHeight - 1),
-			// 	0.25,
-			// }
 
 			color := rayColor(ray)
 
@@ -78,40 +71,21 @@ func writeColor(out *os.File, color trace.Color) {
 
 func rayColor(r trace.Ray) trace.Color {
 	sphere := trace.NewSphere(geom.Vec3{0, 0, -1}, 0.5)
-	t := hitSphere(sphere, r)
-	if t > 0.0 {
-		normal := r.At(t).Minus(sphere.Center).Unit()
+	var hit trace.Hit
+	isHit := sphere.Hit(r, 0, 100, &hit)
+
+	if isHit {
+		normal := hit.Normal
 		return trace.Color{normal.X()+1, normal.Y()+1, normal.Z()+1}.Scaled(0.5)
 	}
 	unitDirection := geom.Vec3(r.Dir).Unit()
 
-	t = 0.5 * unitDirection.Y() + 0.5;
+	hit.T = 0.5 * unitDirection.Y() + 0.5;
 
 	blue := trace.Color{0.5, 0.7, 1.0}
 
 	// linear interpolation
 	// blendedValue=(1−𝑡)⋅startValue+𝑡⋅endValue
 	// (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
-	return trace.White.Scaled(1.0 - t).Plus(blue.Scaled(t))
-}
-
-// (𝑥−𝐶𝑥)2+(𝑦−𝐶𝑦)2+(𝑧−𝐶𝑧)2=𝑟2
-// (𝐏−𝐂)⋅(𝐏−𝐂)=(𝑥−𝐶𝑥)2+(𝑦−𝐶𝑦)2+(𝑧−𝐶𝑧)2
-// (𝐏−𝐂)⋅(𝐏−𝐂)=𝑟2
-// Checking (𝐏(𝑡)−𝐂)⋅(𝐏(𝑡)−𝐂)=𝑟2
-// (𝐀+𝑡𝐛−𝐂)⋅(𝐀+𝑡𝐛−𝐂)=𝑟2
-// 𝑡2𝐛⋅𝐛+2𝑡𝐛⋅(𝐀−𝐂)+(𝐀−𝐂)⋅(𝐀−𝐂)−𝑟2=0
-func hitSphere(sphere trace.Sphere, r trace.Ray) float64 {
-	oc := r.Origin.Minus(sphere.Center)
-
-	a := r.Dir.LenSq()
-	halfB := oc.Dot(r.Dir)
-	c := oc.LenSq() - sphere.Radius * sphere.Radius
-	discriminant := halfB*halfB - a*c
-
-	if (discriminant < 0) {
-        return -1.0;
-    } else {
-        return (-halfB - math.Sqrt(discriminant) ) / a;
-    }
+	return trace.White.Scaled(1.0 - hit.T).Plus(blue.Scaled(hit.T))
 }

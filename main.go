@@ -9,11 +9,6 @@ import (
 	"github.com/K1ngArtes/ray-tracing-in-one-weekend/trace"
 )
 
-// const (
-// 	imageWidth  = 256
-// 	imageHeight = 256
-// )
-
 func main() {
 
 	// Image
@@ -39,6 +34,9 @@ func main() {
 	f := os.Stdout
 	defer f.Close()
 
+	sphere := trace.NewSphere(geom.Vec3{0, 0, -1}, 0.5)
+	list := trace.NewList(&sphere)
+
 	// Picture is read row by row
 	for row := imageHeight - 1; row >= 0; row-- {
 		// l.Printf("\rScanlines remaining: %d", row)
@@ -49,7 +47,7 @@ func main() {
 			// ray r(origin, lower_left_corner + u*horizontal + v*vertical - origin);
 			ray := trace.Ray{origin, lowerLeftCorner.Plus(horizontal.Scaled(u)).Plus(vertical.Scaled(v)).Minus(origin)}
 
-			color := rayColor(ray)
+			color := rayColor(ray, list)
 
 			writeColor(f, color)
 		}
@@ -69,23 +67,19 @@ func writeColor(out *os.File, color trace.Color) {
 	}
 }
 
-func rayColor(r trace.Ray) trace.Color {
-	sphere := trace.NewSphere(geom.Vec3{0, 0, -1}, 0.5)
+func rayColor(r trace.Ray, hittables *trace.List) trace.Color {
 	var hit trace.Hit
-	isHit := sphere.Hit(r, 0, 100, &hit)
-
+	isHit := hittables.Hit(r, 0, 100, &hit)
 	if isHit {
 		normal := hit.Normal
 		return trace.Color{normal.X()+1, normal.Y()+1, normal.Z()+1}.Scaled(0.5)
 	}
+
 	unitDirection := geom.Vec3(r.Dir).Unit()
-
 	hit.T = 0.5 * unitDirection.Y() + 0.5;
-
 	blue := trace.Color{0.5, 0.7, 1.0}
 
 	// linear interpolation
 	// blendedValue=(1−𝑡)⋅startValue+𝑡⋅endValue
-	// (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
 	return trace.White.Scaled(1.0 - hit.T).Plus(blue.Scaled(hit.T))
 }

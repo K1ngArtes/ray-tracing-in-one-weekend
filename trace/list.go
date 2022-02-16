@@ -26,7 +26,7 @@ func (l *List) Hit(r Ray, tMin float64, tMax float64, hitRecord *Hit) bool {
 		if o.Hit(r, tMin, closestSoFar, &tempHitRec) {
 			isHit = true
 			closestSoFar = tempHitRec.T
-			hitRecord = &tempHitRec 
+			*hitRecord = tempHitRec
 		}
 	}
 

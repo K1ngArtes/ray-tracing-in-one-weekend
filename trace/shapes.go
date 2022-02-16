@@ -18,7 +18,7 @@ func NewSphere(center geom.Vec3, radius float64) Sphere {
 	}
 }
 
-func (sphere Sphere) Hit(r Ray, tMin float64, tMax float64, hit *Hit) bool {
+func (sphere *Sphere) Hit(r Ray, tMin float64, tMax float64, hit *Hit) bool {
 	oc := r.Origin.Minus(sphere.Center)
 
 	a := r.Dir.LenSq()
